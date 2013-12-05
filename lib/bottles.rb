@@ -8,14 +8,23 @@ class BottlesSong
   end
 
   def verse(number)
-    BeerVerse.new(number).to_s
+    BeerVerse.new(strategy(number)).to_s
+  end
+  
+  def strategy(number)
+    begin 
+      Object.const_get("VerseStrategy#{number}")
+    rescue NameError => e
+      VerseStrategy
+    end.new(number)
   end
 end
 
 class BeerVerse
-  attr_reader :number
-  def initialize(number)
-    @number = number
+  attr_reader :strategy
+  
+  def initialize(strategy)
+    @strategy = strategy
   end
 
   def to_s
@@ -28,58 +37,90 @@ class BeerVerse
   private
 
   def starting_count
-    case number
-    when 0
-      'no more'
-    else
-      number
-    end
+    strategy.starting_count
   end
 
   def starting_container
-    case number
-    when 1
-      'bottle'
-    else
-      'bottles'
-    end
+    strategy.starting_container
   end
 
   def action
-    case number
-    when 0
-      "Go to the store and buy some more"
-    else
-      "Take #{pronoun} down and pass it around"
-    end
-  end
-
-  def pronoun
-    case number
-    when 1
-      'it'
-    else
-      'one'
-    end
+    strategy.action
   end
 
   def ending_count
-    case number
-    when 0
-      99
-    when 1
-      'no more'
-    else
-      number - 1
-    end
+    strategy.ending_count
   end
 
   def ending_container
-    case number
-    when 2
-      'bottle'
-    else
-      'bottles'
-    end
+    strategy.ending_container
+  end
+end
+
+class VerseStrategy
+  attr_reader :number
+  
+  def initialize(number)
+    @number = number
+  end
+  
+  def starting_count
+    number
+  end
+
+  def starting_container
+    'bottles'
+  end
+
+  def action
+    "Take #{pronoun} down and pass it around"
+  end
+
+  def pronoun
+    'one'
+  end
+
+  def ending_count
+    number - 1
+  end
+
+  def ending_container
+    'bottles'
+  end
+  
+end
+
+class VerseStrategy0 < VerseStrategy
+  def starting_count
+    'no more'
+  end
+  
+  def action
+    "Go to the store and buy some more"
+  end
+  
+  def ending_count
+    99
+  end
+end
+
+class VerseStrategy1 < VerseStrategy
+  def starting_container
+    'bottle'
+  end
+  
+  def pronoun
+    'it'
+  end
+  
+  def ending_count
+    'no more'
+  end
+      
+end
+
+class VerseStrategy2 < VerseStrategy
+  def ending_container
+    'bottle'
   end
 end
